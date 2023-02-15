@@ -17,6 +17,7 @@ export default function FormDataComponent() {
   const refUrl = useRef();
   const refULItem = useRef();
   const refSaveBtn = useRef();
+  const refFileInput = useRef();
 
   useEffect(() => {
     const storageMemItemList = JSON.parse(localStorage.getItem("memItemList"));
@@ -52,14 +53,25 @@ export default function FormDataComponent() {
     refUrl.current.value = "";
   };
 
-  const handleSave = () => {
+  const handleExport = () => {
     const fileData = JSON.stringify(memItemList);
     const blob = new Blob([fileData], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.download = "export-mem.txt";
+    link.download = "export-mem.json";
     link.href = url;
     link.click();
+  };
+
+  const handleImport = (e) => {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      // read data from file and set memory list state
+      setMemItemList(JSON.parse(e.target.result));
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -107,12 +119,25 @@ export default function FormDataComponent() {
           Add
         </Button>{" "}
         <Button
-          variant="success"
-          onClick={handleSave}
+          variant="outline-success"
+          onClick={handleExport}
           type="button"
           ref={refSaveBtn}
         >
-          Save
+          Export to file
+        </Button>{" "}
+        <Form.Control
+          ref={refFileInput}
+          onChange={handleImport}
+          type="file"
+          style={{ display: "none" }}
+        />
+        <Button
+          variant="outline-warning"
+          onClick={() => refFileInput.current.click()}
+          type="button"
+        >
+          Import from file
         </Button>
       </Form>
       <div>
